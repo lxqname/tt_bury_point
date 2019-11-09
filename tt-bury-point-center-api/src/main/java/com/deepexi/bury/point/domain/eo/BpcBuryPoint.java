@@ -22,7 +22,7 @@ public class BpcBuryPoint extends SuperEntity implements Serializable{
     //@ApiModelProperty(value = "版本记录,修改时自增")
     private Integer  version;
     //@ApiModelProperty(value = "删除标志 1=已删除, 0=未删除")
-    private Boolean dr;
+
     public void setContent(String content){
         this.content = content;
     }
@@ -44,9 +44,7 @@ public class BpcBuryPoint extends SuperEntity implements Serializable{
     public Integer  getVersion(){
         return this.version;
     }
-    public void setDr(Boolean dr){
-        this.dr = dr;
-    }
+
 
 
 

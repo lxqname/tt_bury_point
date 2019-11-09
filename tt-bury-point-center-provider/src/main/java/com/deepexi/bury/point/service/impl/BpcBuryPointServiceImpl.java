@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 
@@ -23,7 +24,7 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(BpcBuryPointServiceImpl.class);
 
-    @Autowired
+    @Resource
     private BpcBuryPointMapper bpcBuryPointMapper;
 
     @Autowired
