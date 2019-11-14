@@ -1,13 +1,11 @@
-FROM deepexi/java:v0.0.1
+# 建议生产使用，ref: http://blog.tenxcloud.com/?p=1894
+FROM fabric8/java-jboss-openjdk8-jdk
 
-WORKDIR /home
+USER root
 
-COPY ./agent/skywalking /home/agent/skywalking
+#中文乱码问题
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
 
-COPY ./tt-bury-point-center-provider/target/app.jar /home
-
-ADD entrypoint.sh /
-
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+# Prepare by downloading dependencies
+COPY tt-bury-point-center-provider/target/demo.jar /home/
