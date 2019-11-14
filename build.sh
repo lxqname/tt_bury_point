@@ -1,34 +1,19 @@
 #!/bin/bash
-
-source common.sh
+cd `dirname $0`
 
 img_mvn="maven:3.3.3-jdk-8"                 # docker image of maven
 m2_cache=~/.m2                              # the local maven cache dir
+proj_home=$PWD                              # the project root dir
 
-h2 '准备构建项目'
+git pull  # should use git clone https://name:pwd@xxx.git
 
-if which mvn ; then
-    info '使用本地maven构建项目'
-    mvn clean package -DskipTests
-else
-    info '使用maven镜像['$img_mvn']构建项目'
-    docker run --rm \
-        -v $m2_cache:/root/.m2 \
-        -v $PROJECT_HOME:/usr/src/mymaven \
-        -w /usr/src/mymaven \
-        $img_mvn mvn clean package -DskipTests
-fi
-if [ $? -eq 0 ];then
-    success '项目构建成功'
-else
-    error '项目构建失败'
-    exit 1
-fi
+echo "use docker maven"
+docker run --rm \
+   -v $m2_cache:/root/.m2 \
+   -v $proj_home:/usr/src/mymaven \
+   -w /usr/src/mymaven $img_mvn mvn clean package -U -Dmaven.test.skip=true
 
-h2 '准备构建Docker镜像'
+mv $proj_home/tt-bury-point-center-provider/target/tt-bury-point-center-provider-*.jar $proj_home/tt-bury-point-center-provider/target/demo.jar
 
-if [ ! -z $IMAGE_NAME ];then
-    docker build --rm -t $IMAGE_NAME .
-else
-    docker build --rm -t $APP_NAME:v$VERSION .
-fi
+echo "构建镜像"
+docker build -t $APP_NAME:v$VERSION .
