@@ -16,6 +16,12 @@ public interface BpcBuryPointService {
 
     Boolean update(String pk, BpcBuryPointDto eo);
 
+    /**
+     * 插入埋点数据
+     *
+     * @param eo
+     * @return
+     */
     Boolean create(BpcBuryPointDto eo);
 
     Boolean delete(String... pk);

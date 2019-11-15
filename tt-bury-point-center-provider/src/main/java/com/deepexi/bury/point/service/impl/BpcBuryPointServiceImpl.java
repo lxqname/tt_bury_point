@@ -12,6 +12,7 @@ import com.github.pagehelper.PageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -29,6 +30,9 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
     @Autowired
     private AppRuntimeEnv appRuntimeEnv;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
     public PageBean findPage(BpcBuryPointDto eo, Integer page, Integer size) {
@@ -49,7 +53,12 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
     @Override
     public Boolean create(BpcBuryPointDto eo) {
-        int result = bpcBuryPointMapper.insert(BeanPowerHelper.mapPartOverrider(eo,BpcBuryPoint.class));
+
+        //数据发送到kafka
+
+        BpcBuryPoint point = BeanPowerHelper.mapPartOverrider(eo, BpcBuryPoint.class);
+        point.setTenantCode(appRuntimeEnv.getTenantId());
+        int result = bpcBuryPointMapper.insert(point);
         return result > 0;
     }
 
