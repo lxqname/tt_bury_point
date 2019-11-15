@@ -25,4 +25,6 @@ public interface BpcBuryPointService {
     Boolean create(BpcBuryPointDto eo);
 
     Boolean delete(String... pk);
+
+    void reSendFailedMessage();
 }

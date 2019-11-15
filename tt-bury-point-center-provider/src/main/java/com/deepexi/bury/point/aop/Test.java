@@ -1,8 +1,10 @@
 package com.deepexi.bury.point.aop;
 
 import com.deepexi.bury.point.config.MyAsyncConfigurer;
+import com.deepexi.bury.point.service.impl.BpcBuryPointServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -25,9 +27,14 @@ public class Test implements CommandLineRunner {
     private static Executor executor = new MyAsyncConfigurer().getAsyncExecutor();
 
 
+    @Autowired
+    BpcBuryPointServiceImpl bpcBuryPointService;
+
+
     @Override
     public void run(String... args) throws Exception {
 
+//        bpcBuryPointService.reSendFailedMessage();
 
     }
 }

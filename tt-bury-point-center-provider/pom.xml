@@ -213,6 +213,21 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
         <version>0.9.12</version>
     </dependency>
 
+    <!-- 定时任务 START -->
+
+    <dependency>
+        <groupId>com.dangdang</groupId>
+        <artifactId>elastic-job-lite-core</artifactId>
+        <version>2.1.5</version>
+    </dependency>
+    <!-- elastic-job-lite-spring -->
+    <dependency>
+        <groupId>com.dangdang</groupId>
+        <artifactId>elastic-job-lite-spring</artifactId>
+        <version>2.1.5</version>
+    </dependency>
+    <!-- 定时任务 END -->
+
 
 </dependencies>
 

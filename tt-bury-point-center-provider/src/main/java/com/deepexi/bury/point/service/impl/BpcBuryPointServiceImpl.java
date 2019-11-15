@@ -6,10 +6,13 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.deepexi.bury.point.config.MyAsyncConfigurer;
 import com.deepexi.bury.point.domain.dto.BpcBuryPointDto;
+import com.deepexi.bury.point.domain.dto.BuryPointMessageDto;
 import com.deepexi.bury.point.domain.dto.Message;
 import com.deepexi.bury.point.domain.eo.BpcBuryPoint;
+import com.deepexi.bury.point.domain.eo.BuryPointMessage;
 import com.deepexi.bury.point.extension.AppRuntimeEnv;
 import com.deepexi.bury.point.mapper.BpcBuryPointMapper;
+import com.deepexi.bury.point.mapper.BuryPointMessageMapper;
 import com.deepexi.bury.point.service.BpcBuryPointService;
 import com.deepexi.common.util.UuidUtils;
 import com.deepexi.util.BeanPowerHelper;
@@ -17,6 +20,7 @@ import com.deepexi.util.pageHelper.PageBean;
 import com.github.pagehelper.PageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -50,6 +54,9 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
     @Resource
     private BpcBuryPointMapper bpcBuryPointMapper;
+
+    @Resource
+    private BuryPointMessageMapper buryPointMessageMapper;
 
     @Autowired
     private AppRuntimeEnv appRuntimeEnv;
@@ -85,6 +92,13 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
         message.setType(event.getStr(TYPE_KEY));
         message.setEvent(event);
 
+
+//        BuryPointMessage buryPointMessage = BeanPowerHelper.mapPartOverrider(message, BuryPointMessage.class);
+//        buryPointMessage.setEvent(JSONUtil.toJsonStr(message.getEvent()));
+//        buryPointMessageMapper.insert(buryPointMessage);
+//
+//
+//        System.out.println(1);
         executor.execute(() -> {
             //数据发送到kafka
             ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TOPIC, JSONUtil.toJsonStr(message));
@@ -92,7 +106,10 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
                 @Override
                 public void onFailure(Throwable throwable) {
                     logger.info("发送失败！ {}", throwable.getMessage());
-
+                    //发送失败 入库暂存
+                    BuryPointMessage buryPointMessage = BeanPowerHelper.mapPartOverrider(message, BuryPointMessage.class);
+                    buryPointMessage.setEvent(JSONUtil.toJsonStr(message.getEvent()));
+                    buryPointMessageMapper.insert(buryPointMessage);
                 }
 
                 @Override
@@ -117,5 +134,38 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
         int result = bpcBuryPointMapper.deleteByIds(pk);
         return result > 0;
     }
+
+
+    @Override
+    public void reSendFailedMessage() {
+        List<BuryPointMessage> list = buryPointMessageMapper.findList(new BuryPointMessageDto());
+        list.stream().forEach(t -> {
+            Message message = new Message();
+            BeanUtils.copyProperties(t, message, "event");
+            message.setEvent(JSONUtil.parseObj(t.getEvent()));
+            executor.execute(() -> {
+                ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TOPIC, JSONUtil.toJsonStr(message));
+                send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        logger.info("重新发送失败！ {}", throwable.getMessage());
+                    }
+
+                    @Override
+                    public void onSuccess(SendResult<String, String> stringStringSendResult) {
+                        logger.info("重新发送成功！ {}", stringStringSendResult.toString());
+                        //删除该记录 物理删除
+                        int i = buryPointMessageMapper.realDelete(t.getId());
+                        if (i > 0) {
+                            logger.info("删除该条消息成功！id: {}", t.getId());
+                        }
+                    }
+                });
+            });
+        });
+
+    }
+
+
 
 }
