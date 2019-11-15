@@ -1,29 +1,52 @@
 package com.deepexi.bury.point.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.deepexi.bury.point.config.MyAsyncConfigurer;
 import com.deepexi.bury.point.domain.dto.BpcBuryPointDto;
+import com.deepexi.bury.point.domain.dto.Message;
 import com.deepexi.bury.point.domain.eo.BpcBuryPoint;
 import com.deepexi.bury.point.extension.AppRuntimeEnv;
 import com.deepexi.bury.point.mapper.BpcBuryPointMapper;
 import com.deepexi.bury.point.service.BpcBuryPointService;
+import com.deepexi.common.util.UuidUtils;
 import com.deepexi.util.BeanPowerHelper;
 import com.deepexi.util.pageHelper.PageBean;
 import com.github.pagehelper.PageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 
 @Component
 @Service(version = "${demo.service.version}")
 public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
+
+    @Value("${spring.profiles.active}")
+    private String profile;
+
     private static final Logger logger = LoggerFactory.getLogger(BpcBuryPointServiceImpl.class);
+
+    private static Executor executor = new MyAsyncConfigurer().getAsyncExecutor();
+
+    private static final String TYPE_KEY = "action";
+
+    private static final String TOPIC = "test";
+
 
     @Resource
     private BpcBuryPointMapper bpcBuryPointMapper;
@@ -53,13 +76,33 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
     @Override
     public Boolean create(BpcBuryPointDto eo) {
+        String content = eo.getContent();
+        JSONObject event = JSONUtil.parseObj(content);
+        Message message = new Message();
+        message.setId(UuidUtils.randomUUID());
+        message.setEnv(profile);
+        message.setTime(DateUtil.formatDateTime(new Date()));
+        message.setType(event.getStr(TYPE_KEY));
+        message.setEvent(event);
 
-        //数据发送到kafka
+        executor.execute(() -> {
+            //数据发送到kafka
+            ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TOPIC, JSONUtil.toJsonStr(message));
+            send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    logger.info("发送失败！ {}", throwable.getMessage());
 
-        BpcBuryPoint point = BeanPowerHelper.mapPartOverrider(eo, BpcBuryPoint.class);
-        point.setTenantCode(appRuntimeEnv.getTenantId());
-        int result = bpcBuryPointMapper.insert(point);
-        return result > 0;
+                }
+
+                @Override
+                public void onSuccess(SendResult<String, String> stringStringSendResult) {
+                    logger.info("发送成功！ {}", stringStringSendResult.toString());
+                }
+            });
+        });
+
+        return true;
     }
 
     @Override

@@ -1,10 +1,13 @@
 package com.deepexi.bury.point.aop;
 
+import com.deepexi.bury.point.config.MyAsyncConfigurer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.Executor;
 
 /**
  * @Author: 白猛
@@ -19,8 +22,12 @@ public class Test implements CommandLineRunner {
     @Value("${spring.profiles.active}")
     private String profile;
 
+    private static Executor executor = new MyAsyncConfigurer().getAsyncExecutor();
+
+
     @Override
     public void run(String... args) throws Exception {
-        logger.info("环境参数：{}", profile);
+
+
     }
 }
