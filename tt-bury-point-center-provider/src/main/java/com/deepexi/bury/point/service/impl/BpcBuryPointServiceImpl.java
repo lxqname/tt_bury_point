@@ -95,6 +95,7 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
         message.setEvent(event);
 
 
+
         executor.execute(() -> {
             //数据发送到kafka
             ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));

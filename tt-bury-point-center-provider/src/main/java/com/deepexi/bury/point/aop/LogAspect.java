@@ -9,8 +9,6 @@ package com.deepexi.bury.point.aop;
 import com.alibaba.fastjson.JSON;
 import com.deepexi.bury.point.extension.AppRuntimeEnv;
 import com.deepexi.common.annotation.TenantId;
-import com.deepexi.common.annotation.Token;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
@@ -64,7 +62,7 @@ public class LogAspect {
         if (RequestContextHolder.getRequestAttributes() != null) {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             appRuntimeEnv.setTenantId(getParam(request, TENANT_KEY));
-            appRuntimeEnv.setToken(getParam(request, TOKEN_KEY));
+//            appRuntimeEnv.setToken(getParam(request, TOKEN_KEY));
         }
 
         Object response = null;
@@ -93,10 +91,10 @@ public class LogAspect {
         }
 
         TenantId tenantAnnotation = null;
-        Token tokenAnnotation = null;
+//        Token tokenAnnotation = null;
         if (method != null) {
             tenantAnnotation = method.getAnnotation(TenantId.class);
-            tokenAnnotation = method.getAnnotation(Token.class);
+//            tokenAnnotation = method.getAnnotation(Token.class);
         }
 
         //默认全局拦截，不包含注解，或者require=true，则拦截
@@ -108,11 +106,11 @@ public class LogAspect {
 
         //token统一获取,eg:Authorization：Bearer xxxx
         String auth = request.getHeader(TOKEN_KEY);
-        if (tokenAnnotation == null || tokenAnnotation.require()) {
-            appRuntimeEnv.ensureToken(StringUtils.isEmpty(auth) ? null : auth.split(" ")[1].trim());
-        } else {
-            appRuntimeEnv.setToken(StringUtils.isEmpty(auth) ? null : auth.split(" ")[1].trim());
-        }
+//        if (tokenAnnotation == null || tokenAnnotation.require()) {
+//            appRuntimeEnv.ensureToken(StringUtils.isEmpty(auth) ? null : auth.split(" ")[1].trim());
+//        } else {
+//            appRuntimeEnv.setToken(StringUtils.isEmpty(auth) ? null : auth.split(" ")[1].trim());
+//        }
     }
 
 
