@@ -4,7 +4,6 @@ import io.leopard.javahost.JavaHost;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +24,7 @@ import java.util.Map;
  * @date: 2019/8/26 13:49
  */
 @Configuration
-@ConditionalOnClass(MyConfiguration.class)
+//@ConditionalOnClass(MyConfiguration.class)
 @EnableConfigurationProperties(ServerProperties.class)
 @EnableKafka
 public class MyConfiguration implements DisposableBean {

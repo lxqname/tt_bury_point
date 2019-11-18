@@ -25,10 +25,11 @@ import com.dangdang.ddframe.job.lite.api.JobScheduler;
 import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
 import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import javax.annotation.Resource;
 
@@ -38,8 +39,10 @@ import javax.annotation.Resource;
  * @author 蝈蝈
  */
 @Configuration
-@PropertySource("job.properties")
+//@PropertySource("job.properties")
 public class SimpleJobConfig {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
     private ZookeeperRegistryCenter regCenter;
@@ -61,6 +64,5 @@ public class SimpleJobConfig {
                                            @Value("${elasticJob.reSendJob.shardingItemParameters}") final String shardingItemParameters) {
         return new SpringJobScheduler(reSendJob, regCenter, getLiteJobConfiguration(reSendJob.getClass(), cron, shardingTotalCount, shardingItemParameters), jobEventConfiguration);
     }
-
 
 }

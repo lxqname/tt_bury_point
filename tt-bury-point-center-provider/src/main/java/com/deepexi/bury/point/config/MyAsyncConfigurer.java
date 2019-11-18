@@ -1,6 +1,7 @@
 package com.deepexi.bury.point.config;
 
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -16,6 +17,7 @@ public class MyAsyncConfigurer implements AsyncConfigurer {
     public static final int MAX_POOL_SIZE = 20;
     public static final int QUEUE_CAPACITY = 10000;
 
+    @Bean(name = "executor")
     @Override
     public Executor getAsyncExecutor() {
         /*execute(Runable)方法执行过程

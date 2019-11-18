@@ -19,6 +19,8 @@ package com.deepexi.bury.point.job.config;
 
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
@@ -33,9 +35,12 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnExpression("'${elasticJob.regCenter.serverList}'.length() > 0")
 public class RegistryCenterConfig {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Bean(initMethod = "init")
     public ZookeeperRegistryCenter regCenter(@Value("${elasticJob.regCenter.serverList}") final String serverList,
                                              @Value("${elasticJob.regCenter.namespace}") final String namespace) {
         return new ZookeeperRegistryCenter(new ZookeeperConfiguration(serverList, namespace));
     }
+
 }

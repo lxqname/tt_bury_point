@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.dubbo.config.annotation.Service;
-import com.deepexi.bury.point.config.MyAsyncConfigurer;
 import com.deepexi.bury.point.domain.dto.BpcBuryPointDto;
 import com.deepexi.bury.point.domain.dto.BuryPointMessageDto;
 import com.deepexi.bury.point.domain.dto.Message;
@@ -45,11 +44,14 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(BpcBuryPointServiceImpl.class);
 
-    private static Executor executor = new MyAsyncConfigurer().getAsyncExecutor();
+
+    @Resource
+    private Executor executor;
 
     private static final String TYPE_KEY = "action";
 
-    private static final String TOPIC = "test";
+    @Value("${message.topic}")
+    private String topic;
 
 
     @Resource
@@ -93,15 +95,9 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
         message.setEvent(event);
 
 
-//        BuryPointMessage buryPointMessage = BeanPowerHelper.mapPartOverrider(message, BuryPointMessage.class);
-//        buryPointMessage.setEvent(JSONUtil.toJsonStr(message.getEvent()));
-//        buryPointMessageMapper.insert(buryPointMessage);
-//
-//
-//        System.out.println(1);
         executor.execute(() -> {
             //数据发送到kafka
-            ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TOPIC, JSONUtil.toJsonStr(message));
+            ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));
             send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
                 @Override
                 public void onFailure(Throwable throwable) {
@@ -118,7 +114,6 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
                 }
             });
         });
-
         return true;
     }
 
@@ -144,7 +139,7 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
             BeanUtils.copyProperties(t, message, "event");
             message.setEvent(JSONUtil.parseObj(t.getEvent()));
             executor.execute(() -> {
-                ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(TOPIC, JSONUtil.toJsonStr(message));
+                ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));
                 send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
                     @Override
                     public void onFailure(Throwable throwable) {
