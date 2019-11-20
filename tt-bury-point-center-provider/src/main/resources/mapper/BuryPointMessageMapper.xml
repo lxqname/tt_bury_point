@@ -6,7 +6,7 @@
     <resultMap type="com.deepexi.bury.point.domain.dto.BuryPointMessageDto" id="BuryPointMessageDtoResult">
         <result property="id" column="id"/>
         <result property="env" column="env"/>
-        <result property="time" column="time"/>
+        <result property="ctime" column="ctime"/>
         <result property="type" column="type"/>
         <result property="event" column="event"/>
         <result property="tenantCode" column="tenant_code"/>
@@ -18,7 +18,7 @@
         <result property="dr" column="dr"/>
     </resultMap>
     <sql id="Base_Column_List">
-      id,      env,      time,      type,      event,      tenant_code,      created_at,      created_by,      updated_at,      updated_by,      version,      dr    </sql>
+      id,      env,      ctime,      type,      event,      tenant_code,      created_at,      created_by,      updated_at,      updated_by,      version,      dr    </sql>
     <select id="findList" resultType="com.deepexi.bury.point.domain.eo.BuryPointMessage">
         SELECT
         <include refid="Base_Column_List"/>
@@ -26,25 +26,25 @@
     </select>
     <insert id="batchInsert">
         INSERT INTO bury_point_message
-        ( id, env, time, type, event, tenant_code, created_at, created_by, updated_at, updated_by, version, dr)
+        ( id, env, ctime, type, event, tenant_code, created_at, created_by, updated_at, updated_by, version, dr)
         VALUES
         <foreach collection="eo" index="index" item="value" separator=",">
-            ( #{value.id}, #{value.env}, #{value.time}, #{value.type}, #{value.event}, #{value.tenantCode},
+            ( #{value.id}, #{value.env}, #{value.ctime}, #{value.type}, #{value.event}, #{value.tenantCode},
             #{value.createdAt}, #{value.createdBy}, #{value.updatedAt}, #{value.updatedBy}, #{value.version},
             #{value.dr})
         </foreach>
     </insert>
     <update id="batchUpdate">
         INSERT INTO bury_point_message
-        ( id, env, time, type, event, tenant_code, created_at, created_by, updated_at, updated_by, version, dr)
+        ( id, env, ctime, type, event, tenant_code, created_at, created_by, updated_at, updated_by, version, dr)
         VALUES
         <foreach collection="eo" index="index" item="value" separator=",">
-            ( #{value.id}, #{value.env}, #{value.time}, #{value.type}, #{value.event}, #{value.tenantCode},
+            ( #{value.id}, #{value.env}, #{value.ctime}, #{value.type}, #{value.event}, #{value.tenantCode},
             #{value.createdAt}, #{value.createdBy}, #{value.updatedAt}, #{value.updatedBy}, #{value.version},
             #{value.dr})
         </foreach>
         ON DUPLICATE KEY UPDATE
-        id=values(id), env=values(env), time=values(time), type=values(type), event=values(event),
+        id=values(id), env=values(env), ctime=values(ctime), type=values(type), event=values(event),
         tenant_code=values(tenant_code), created_at=values(created_at), created_by=values(created_by),
         updated_at=values(updated_at), updated_by=values(updated_by), version=values(version), dr=values(dr)
     </update>
