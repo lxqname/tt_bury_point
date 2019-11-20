@@ -3,6 +3,7 @@ package com.deepexi.bury.point.domain.dto;
 import cn.hutool.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @Author: 白猛
@@ -14,7 +15,7 @@ public class Message implements Serializable {
 
     private String env;
 
-    private String time;
+    private Date ctime;
 
     private String type;
 
@@ -36,12 +37,12 @@ public class Message implements Serializable {
         this.env = env;
     }
 
-    public String getTime() {
-        return time;
+    public Date getCtime() {
+        return ctime;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setCtime(Date ctime) {
+        this.ctime = ctime;
     }
 
     public String getType() {
