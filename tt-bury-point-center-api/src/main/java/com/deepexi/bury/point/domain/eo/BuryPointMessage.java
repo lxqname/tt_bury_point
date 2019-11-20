@@ -3,7 +3,6 @@ package com.deepexi.bury.point.domain.eo;
 import com.deepexi.common.domain.eo.SuperEntity;
 
 import java.io.Serializable;
-import java.util.Date;
 //import io.swagger.annotations.ApiModel;
 //import io.swagger.annotations.ApiModelProperty;
 
@@ -18,7 +17,7 @@ public class BuryPointMessage extends SuperEntity implements Serializable {
     //@ApiModelProperty(value = "环境")
     private String env;
     //@ApiModelProperty(value = "时间")
-    private Date ctime;
+    private String ctime;
     //@ApiModelProperty(value = "动作类型")
     private String type;
     //@ApiModelProperty(value = "具体数据")
@@ -34,11 +33,11 @@ public class BuryPointMessage extends SuperEntity implements Serializable {
         return this.env;
     }
 
-    public Date getCtime() {
+    public String getCtime() {
         return ctime;
     }
 
-    public void setCtime(Date ctime) {
+    public void setCtime(String ctime) {
         this.ctime = ctime;
     }
 

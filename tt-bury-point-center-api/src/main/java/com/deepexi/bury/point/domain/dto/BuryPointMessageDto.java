@@ -12,7 +12,7 @@ public class BuryPointMessageDto implements Serializable {
 
     private String env;
 
-    private Date ctime;
+    private String ctime;
 
     private String type;
 
@@ -49,11 +49,11 @@ public class BuryPointMessageDto implements Serializable {
         return this.env;
     }
 
-    public Date getCtime() {
+    public String getCtime() {
         return ctime;
     }
 
-    public void setCtime(Date ctime) {
+    public void setCtime(String ctime) {
         this.ctime = ctime;
     }
 

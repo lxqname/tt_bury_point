@@ -1,5 +1,7 @@
 package com.deepexi.bury.point.service.impl;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -89,7 +91,7 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
         Message message = new Message();
         message.setId(UuidUtils.randomUUID());
         message.setEnv(profile);
-        message.setCtime(new Date());
+        message.setCtime(DateUtil.format(new Date(), DatePattern.UTC_PATTERN));
         message.setType(event.getStr(TYPE_KEY));
         message.setEvent(event);
 
