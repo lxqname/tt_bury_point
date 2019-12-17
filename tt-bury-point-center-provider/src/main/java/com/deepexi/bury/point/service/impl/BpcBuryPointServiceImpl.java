@@ -1,7 +1,5 @@
 package com.deepexi.bury.point.service.impl;
 
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -30,7 +28,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -91,30 +89,35 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
         Message message = new Message();
         message.setId(UuidUtils.randomUUID());
         message.setEnv(profile);
-        message.setCtime(DateUtil.format(new Date(), DatePattern.UTC_PATTERN));
+        message.setCtime(Instant.now().toString());
         message.setType(event.getStr(TYPE_KEY));
         message.setEvent(event);
 
 
-        executor.execute(() -> {
-            //数据发送到kafka
-            ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));
-            send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-                @Override
-                public void onFailure(Throwable throwable) {
-                    logger.info("发送失败！ {}", throwable.getMessage());
-                    //发送失败 入库暂存
-                    BuryPointMessage buryPointMessage = BeanPowerHelper.mapPartOverrider(message, BuryPointMessage.class);
-                    buryPointMessage.setEvent(JSONUtil.toJsonStr(message.getEvent()));
-                    buryPointMessageMapper.insert(buryPointMessage);
-                }
+        try {
+            executor.execute(() -> {
+                //数据发送到kafka
+                ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));
+                send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        logger.info("发送失败！ {}", throwable.getMessage());
+                        //发送失败 入库暂存
+                        BuryPointMessage buryPointMessage = BeanPowerHelper.mapPartOverrider(message, BuryPointMessage.class);
+                        buryPointMessage.setEvent(JSONUtil.toJsonStr(message.getEvent()));
+                        buryPointMessageMapper.insert(buryPointMessage);
+                    }
 
-                @Override
-                public void onSuccess(SendResult<String, String> stringStringSendResult) {
-                    logger.info("发送成功！ {}", stringStringSendResult.toString());
-                }
+                    @Override
+                    public void onSuccess(SendResult<String, String> stringStringSendResult) {
+                        logger.info("发送成功！ {}", stringStringSendResult.toString());
+                    }
+                });
             });
-        });
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.info(e.getMessage());
+        }
         return true;
     }
 
@@ -139,25 +142,30 @@ public class BpcBuryPointServiceImpl implements BpcBuryPointService {
             Message message = new Message();
             BeanUtils.copyProperties(t, message, "event");
             message.setEvent(JSONUtil.parseObj(t.getEvent()));
-            executor.execute(() -> {
-                ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));
-                send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-                    @Override
-                    public void onFailure(Throwable throwable) {
-                        logger.info("重新发送失败！ {}", throwable.getMessage());
-                    }
-
-                    @Override
-                    public void onSuccess(SendResult<String, String> stringStringSendResult) {
-                        logger.info("重新发送成功！ {}", stringStringSendResult.toString());
-                        //删除该记录 物理删除
-                        int i = buryPointMessageMapper.realDelete(t.getId());
-                        if (i > 0) {
-                            logger.info("删除该条消息成功！id: {}", t.getId());
+            try {
+                executor.execute(() -> {
+                    ListenableFuture<SendResult<String, String>> send = kafkaTemplate.send(topic, JSONUtil.toJsonStr(message));
+                    send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            logger.info("重新发送失败！ {}", throwable.getMessage());
                         }
-                    }
+
+                        @Override
+                        public void onSuccess(SendResult<String, String> stringStringSendResult) {
+                            logger.info("重新发送成功！ {}", stringStringSendResult.toString());
+                            //删除该记录 物理删除
+                            int i = buryPointMessageMapper.realDelete(t.getId());
+                            if (i > 0) {
+                                logger.info("删除该条消息成功！id: {}", t.getId());
+                            }
+                        }
+                    });
                 });
-            });
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.info(e.getMessage());
+            }
         });
 
     }

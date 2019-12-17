@@ -34,7 +34,7 @@ public class MyAsyncConfigurer implements AsyncConfigurer {
         // 线程池维护线程的最大数量
         taskExecutor.setMaxPoolSize(MAX_POOL_SIZE);
         // 缓存队列
-        taskExecutor.setQueueCapacity(QUEUE_CAPACITY);
+//        taskExecutor.setQueueCapacity(QUEUE_CAPACITY);
         taskExecutor.initialize();
         return taskExecutor;
     }
@@ -43,4 +43,5 @@ public class MyAsyncConfigurer implements AsyncConfigurer {
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return null;
     }
+
 }
